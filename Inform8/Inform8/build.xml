@@ -1,0 +1,43 @@
+<!--
+ 
+ Copyright 2011 - Inform8
+ http://www.inform8.com
+
+ Licensed under the Apache License, Version 2.0 (the "License")
+ http://www.apache.org/licenses/LICENSE-2.0
+
+-->
+<project name="Inform8" default="gen" basedir=".">
+
+  <property file="build.properties" />
+  <property file="config/gen.properties" />
+
+  <target name="init">
+    <delete dir="${gen.out.folder}" />
+    <mkdir dir="${gen.out.folder}" />
+  </target>
+
+  <target name="gen" depends="init">
+    
+    <echo message="Generating">
+    </echo>
+    
+    <java failonerror="true" classname="com.eighty8.inform8.Inform8" 
+      classpath="bin/inform8.common.jar:bin/inform8.php.essentials.jar:lib/ve.jar:lib/mysql.jar:lib/log4j.jar:lib/" args="config/gen.properties" fork="true">
+      <sysproperty key="log4j.configuration" value="inform8-log4j.properties"/>
+    </java>
+    
+    <mkdir dir="${gen.dist.folder}" />
+    
+    <copy todir="${gen.dist.folder}" overwrite="true">
+      <fileset dir="${gen.out.folder}" includes="**/*" excludes="bo/*"></fileset>
+      <fileset dir="php" includes="**/*"></fileset>
+    </copy>
+
+    <copy todir="${gen.dist.folder}/bo" overwrite="false">
+      <fileset dir="${gen.out.folder}/bo"></fileset>
+    </copy>
+    
+  </target>
+
+</project>

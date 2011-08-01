@@ -1,0 +1,53 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+*#<?php
+/**
+ * IQL Definition for: ${table.name}
+ *
+ * Generated source code using Inform8.
+ */    
+class ${table.name}IQL {
+        
+    public static $_TABLE = '${table.name}';
+    
+    public static ${ds}${table.primaryKey.name.toUpperCase()} = '${table.primaryKey.name}';
+    
+    #foreach( $mem in ${table.columns} )
+        public static ${ds}${mem.name.toUpperCase()} = '${mem.name}';
+    #end
+
+    
+    /**
+     * Creates a new IQL select query returning objects of type ${table.name} with all fields populated.
+     * 
+     */
+    public static function select() {
+        $select = new IQLSelect(${table.name}IQL::$_TABLE, array('*'));
+        return $select;
+    }
+
+    
+    /**
+     * Creates a new IQL aggregate query for the table: ${table.name}
+     */
+    public static function aggregate() {
+        $select = new IQLAggregate(${table.name}IQL::$_TABLE);
+        return $select;
+    }
+
+    
+    /**
+     * Creates a new count query fpr the table ${table.name}
+     *
+     */    
+    public static function count() {
+        $select = new IQLCount(${table.name}IQL::$_TABLE, '*');
+        return $select;
+    }
+
+}  
+?>

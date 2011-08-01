@@ -1,0 +1,28 @@
+<project name="Your Site" default="localDeploy" basedir=".">
+    
+	<property file="build.properties"/>
+	
+    <target name="localDeploy" >
+        <copy todir="${localFolder}" overwrite="true">
+            <fileset dir="site/" includes="**">
+            </fileset>
+        </copy>
+      <move file="${localFolder}/config/includes/db/db.conn.local.php" 
+        tofile="${localFolder}/config/includes/db/db.conn.prod.php"></move>				
+    </target>
+    
+    <target name="prodDeploy">
+        <zip destfile="site.zip">
+            <fileset dir="site/" includes="**">
+            </fileset>
+        </zip>
+    	<echo message="${pwd}" />
+        <ftp server="${prodServer}" passive="true" userid="${prodServerUserName}" password="${pwd}" remotedir="${prodServerFolder}" >
+            <fileset dir="." includes="site.zip">
+            </fileset>
+        </ftp>
+        <sshexec host="${prodServer}" username="${prodServerUserName}" password="${pwd}" trust="true" command="unzip -o ${prodUnzipFolder}site.zip -d ${prodUnzipFolder}"/>
+        <sshexec host="${prodServer}" username="${prodServerUserName}" password="${pwd}" trust="true" command="rm ${prodUnzipFolder}site.zip" />
+    </target>
+	
+</project>

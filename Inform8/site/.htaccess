@@ -1,0 +1,22 @@
+Options +FollowSymlinks
+
+RewriteEngine on
+
+RewriteRule error$ error.php [L,S=1]
+RewriteRule error.php$ error.php [L]
+
+RewriteRule ajax.php$ ajax.php [L]
+
+RewriteRule logout$ index.php?logout=true [NC]
+
+RewriteRule stream.php$ stream.php [L]
+RewriteRule ^stream/(.*)$ stream.php?f=$1 [L]
+
+RewriteRule ^config/(.*) /index.php [R]
+RewriteRule ^logs/(.*) /index.php [R]
+
+RewriteRule ^([A-Z][a-z]*)\.htm$ index.php?p=$1 [QSA,NC]
+RewriteRule ^(.*)\.htm$ index.php [NC]
+RewriteRule ^(.*)\.php$ index.php [NC]
+
+RewriteRule ^stream/(.*)$ stream.php?f=$1 [NC]

@@ -1,0 +1,22 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+*#<?php
+/**
+ * This class is the generated to hold any required business logic.
+ * It extends the data object, where the table data is held. 
+ *
+ * Unlike other Inform8 classes this one can be edited if you are 
+ * using the standard/supplied build file which does not overwrite these files after they are first wriiten
+ *
+ * Generated source code using Inform8.
+ */
+class ${table.name} extends ${table.name}Data {
+
+
+}
+?>

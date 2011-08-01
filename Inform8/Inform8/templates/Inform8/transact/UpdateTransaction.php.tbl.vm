@@ -1,0 +1,85 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+*#<?php
+
+/**
+ * Transaction to update a ${table.name} Object.
+ *
+ * This class is declared abstract, the implementor must implment the update method
+ * where the desired object cna be updated.
+ */
+abstract class ${table.name}UpdateTransaction {
+	
+	/** the primary key value of the object this transaction will work upon */
+	private $id;
+    
+    /** The object to be updated */
+    private $obj;
+	
+    /**
+     * @param $id mixed the primary key value of the object to be updated
+     */
+	function __construct($id) {
+		$this->id = $id;
+	}
+
+    
+    /**
+     * Implment this method if you wish to perform some validation prior to execution.
+     *
+     * Must be called by the client directly. May change in future versions.
+     *
+     * @return true if the validation passes or false if not.
+     */
+	public function preValidate() {
+		return true;
+	}
+
+
+	/**
+	 * Loads the ${table.name} object 
+	 * @return Create${table.name}Transaction this
+	 */
+	protected function load() {
+		$dao = new ${table.name}Dao();
+		$this->obj = $dao->get($this->id);
+		return $this;
+	}
+
+
+	/**
+	 * This method should be implemented by the extending class.
+	 * This is the opportunity to set the values on the existing object before saving.
+	 * @param $obj ${table.name} The object to update
+	 * @abstract 
+	 */
+	public abstract function updateObj(${table.name} $obj);
+
+
+    /**
+     * Runs the transaction. Loads, updates and saves the object.
+     * @return ${table.name} the saved object.
+     */
+	public final function run() {
+		$this->load();
+		$this->updateObj($this->obj);
+		return $this->save();
+	}
+	
+
+    /**
+     * Saves the object, updating the record in the database
+     * @return ${table.name} the saved object.
+     */
+	protected function save() {
+		$dao = new ${table.name}Dao();
+		return $dao->save($this->obj);
+	}
+
+}
+?>

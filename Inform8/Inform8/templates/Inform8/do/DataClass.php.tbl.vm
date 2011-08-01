@@ -1,0 +1,280 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+*#<?php
+  #macro(getOtherTable $fk) 
+    #set($jt_cm = ${daFk.childTable.columnModel.copy()})
+    #set($temp = ${jt_cm.remove(${daFk.childColumnName})})
+    #set($oc = ${jt_cm.columns.get(0)})
+    #set($ot = ${jt_cm.columns.get(0).childForeignKey.masterTable})
+  #end  
+/**
+ * This class represents the database table: ${table.name}
+ *
+ * Generated source code using Inform8.
+ */
+class ${table.name}Data { 
+  
+  ##access is a configuration value specifying the default member access privelages(private, public, ect)
+  #set($access = ${config.allProperties.getProperty("php.class.default.member.access", "private")})
+  #set($cacheFkValues = ${config.allProperties.getProperty("class.cache.FK.values", "true")} == "true")
+
+  /** The primary key for table ${table.name} */
+  ${access} $${table.primaryKey.name}; 
+  
+  #foreach( $col in ${table.columns} )
+    /** Database field: ${col.name} */
+	${access} $${col.name}#if(${col.settings.hasProperty('defaultClassValue')}) = ${col.settings.getProperty('defaultClassValue', NULL)}#end;
+    
+    #if ($cacheFkValues && ${col.childForeignKey})
+      /* 
+       * The object linked to the table: ${col.childForeignKey.masterTable.name} via the field ${col.name}
+       * Foreign Key: ${col.name}<->${col.childForeignKey.masterTable.name}.${col.childForeignKey.masterColumnName}
+       */
+	  ${access} $${col.name}Object;
+	#end
+  #end
+
+  #if ($cacheFkValues)
+      #foreach($daFk in ${table.primaryKey.masterForeignKeys})
+        #if(${daFk.childTable.settings.hasLabel('JOIN_TABLE')})
+            #getOtherTable($daFk)
+            ${access} ${ds}linked${ot.name}ObjectsVia${daFk.childTable.name};
+        #else
+            /** Linked objects from the table: ${daFk.childTable.name} */
+            ${access} ${ds}linked${daFk.childTable.name}ObjectsVia${daFk.childColumnName};
+        #end
+      #end
+  #end
+
+  
+  /**
+   * Reloads this object from the database.
+   * Does not reload any FK values currently cached.
+   */
+  public function reload() {
+    $dao = new ${table.name}Dao();
+    $dao->reload($this);
+  }
+	
+  /**
+   * The primary key for this object.
+   * 
+   * @return The primary key value
+   */  
+  public function get${table.primaryKey.name}() {
+    return $this->${table.primaryKey.name};
+  }
+
+
+  /**
+   * Convenience method to get the Primary Key value
+   * @return the primary key value
+   */  
+  public function getPk() {
+    return $this->get${table.primaryKey.name}();
+  }  
+
+
+  /**
+   * Set the Primary Key value.
+   * @param ${table.primaryKey.type.name} $var the value
+   * @return Object this;
+   */  
+  public function set${table.primaryKey.name}($var) {
+    $this->${table.primaryKey.name} = $var;
+    return $this;
+  }
+  
+	
+  #foreach( $col in $table.columns )
+    /**
+     * Get the value of the database field: ${col.name}
+	 *
+     * @return ${col.type.name} ${col.name} value;
+     */ 	
+    public function get${col.name}() {
+      return $this->${col.name};
+    }
+     
+     
+    #if (${col.childForeignKey}) 
+      /**
+       * Get the full object of type ${col.childForeignKey.masterTable.name} that is linked 
+	   * to this object by the field: ${col.name}.
+       *
+       #if (${col.displaySettings.hasLabel('NOT_NULL')}) @return Object Linked object of class type ${col.childForeignKey.masterTable.name} or NULL if not set. #else @return Object Linked object of class type ${col.childForeignKey.masterTable.name} 
+       #end
+       * @return Object Returns the object of type ${col.childForeignKey.masterTable.name} linked to this record through the field: ${col.name} or null if the record is not found. 
+       * @throw Inform8DbException if there is an error reteiving the child record.
+       */ 		
+      public function get${col.name}AsObject() {
+        #if($cacheFkValues)
+        if ($this->${col.name}Object == NULL) {
+        #end
+          $otherTableDao = new ${col.childForeignKey.masterTable.name}Dao();
+          #if($cacheFkValues)$this->${col.name}Object =#else return #end $otherTableDao->get($this->get${col.name}());
+        #if($cacheFkValues)
+        }
+        return $this->${col.name}Object;
+        #end
+      }
+    #end
+  #end
+
+  
+  #foreach( $col in $table.columns )
+    /**
+     * Set the field value ${col.name}.
+     #if($col.settings.hasLabel('DB_READ_ONLY'))     
+     * Changes to this field will not be replicated on the database. This field is marked as readonly.
+     * This set${col.name} method is a conveince method only, used to set the value during the load form the database.
+     #end   
+     * @param mixed $var the new value for ${col.name} #if (${col.masterForeignKey}) or Object of type ${col.childForeignKey.masterTable.name} (The primary key value will be used to set the value) #end   
+     * @return Object this;
+     */  
+    public function set${col.name}($var) {
+      #if ($col.masterForeignKey)
+          if (is_object($var) && $var instanceof ${col.childForeignKey.masterTable.name}) {
+             $this->set${col.name}($var->getPk());
+          }
+          if ($this->${col.name} != $var) {
+              //reset as the ID and value are no longer in sync.
+              $this->${col.name}Object = NULL;    
+          }
+      #end
+      $this->${col.name} = $var;
+
+      return $this;
+    }
+  
+    #if ($col.childForeignKey) 
+      /**
+       * Sets the linked object of type ${col.childForeignKey.masterTable.name} that is linked 
+       * to this object by the field: ${col.name}
+       #if($col.settings.hasLabel('DB_READ_ONLY'))       
+       * Changes to this field will not be replicated on the database. This field/object is marked as readonly.
+       #end
+       * @return Object this
+       */       
+      public function set${col.name}AsObject($${col.name}Obj) {
+        $this->set${col.name}($${col.name}Obj->getPk());
+        #if($cacheFkValues)
+            $this->${col.name}Object = $${col.name}Obj;
+        #end
+        return $this;
+      }
+    #end
+  
+  #end  
+  
+
+
+  
+  ## check for any embedded tables
+  #foreach($daFk in ${table.primaryKey.masterForeignKeys})
+	#if($daFk.childTable.settings.hasLabel('JOIN_TABLE'))
+      #getOtherTable($daFk)
+      /** 
+	   * Convenience method to access all the linked objects from the ${ot.name} table
+       * Using the join table: ${daFk.childTable.name}
+	   *
+       * #if($cacheFkValues)@param refreshCached boolean set to true to clear any cached values#end
+	   * @return Array An array of objects of class type ${ot.name}
+       * @throw Inform8DbException if there is an error reteiving the child records. 
+       */
+      public function get${ot.name}ObjectsVia${daFk.childTable.name}(#if($cacheFkValues)$refreshCached#end) {
+        #if($cacheFkValues)
+            if ($refreshCached || $this->linked${ot.name}ObjectsVia${daFk.childTable.name} == NULL) {
+        #end
+        $jtDao = new ${daFk.childTable.name}Dao();
+        $linkObs = $jtDao->getWithSQL('${daFk.childColumnName} = \'' . $this->getPk() . '\'');
+    
+        #if($cacheFkValues)$this->linked${ot.name}ObjectsVia${daFk.childTable.name}#else$linked${ot.name}ObjectsVia${daFk.childTable.name}#end = array();
+        foreach ($linkObs as $link) {
+          #if($cacheFkValues)$this->linked${ot.name}ObjectsVia${daFk.childTable.name}#else$linked${ot.name}ObjectsVia${daFk.childTable.name}#end[] = $link->get${oc.name}AsObject();
+        }
+        
+        return #if($cacheFkValues)$this->linked${ot.name}ObjectsVia${daFk.childTable.name}#else$linked${ot.name}ObjectsVia${daFk.childTable.name}#end;
+      }
+      
+      /**
+       * Adds a new record in the join table ${daFk.childTable.name} linking the supplied Object of type ${ot.name}
+       * to this object. 
+       *
+       * @param ${ot.name}Object Object can be an existing database object or not(Will be created)
+       * @return Object the ${ot.name} Object
+       * @throw Inform8DbException if there is an error adding the record/s. 
+       */
+      public function add${ot.name}ObjectVia${daFk.childTable.name}($${ot.name}Object) {
+        
+        //test if the object is already created.
+        if ($${ot.name}Object->getPk() == NULL) {
+            $otDao = new ${ot.name}Dao();
+            $${ot.name}Object = $otDao->create($${ot.name}Object);
+        }
+        
+        // Dao to create the child record.
+        $ctDao = new ${daFk.childTable.name}Dao();
+        
+        // build a child link object
+        $childTableRecord = new ${daFk.childTable.name}();        
+        $childTableRecord->set${oc.name}($${ot.name}Object->getPk());
+        $childTableRecord->set${daFk.childColumnName}($this->getPk());
+        
+        // create a link to in the join table
+        $childTableRecord = $ctDao->create($childTableRecord);
+        
+        return $${ot.name}Object;
+      }
+      
+    #else
+      /** 
+       * Convinence method to access all the linked objects from the ${daFk.childTable.name} table
+	   *
+       * #if($cacheFkValues)@param refreshCached boolean set to true to clear any cached values#end
+	   * @return Array An array of objects of class type ${daFk.childTable.name}
+       * @throw Inform8DbException if there is an error reteiving the child records.
+	   */
+      public function get${daFk.childTable.name}ObjectsVia${daFk.childColumnName}(#if($cacheFkValues)$refreshCached#end) {
+        #if($cacheFkValues)
+            if ($refreshCached || $this->linked${daFk.childTable.name}ObjectsVia${daFk.childColumnName} == NULL) {
+        #end
+          $otherTableDao = new ${daFk.childTable.name}Dao();
+          #if($cacheFkValues)$this->linked${daFk.childTable.name}ObjectsVia${daFk.childColumnName} = #else return #end $otherTableDao->getWithSQL('${daFk.childColumnName} = \'' . $this->getPk() . '\'');
+        #if($cacheFkValues)
+            }
+            return $this->linked${daFk.childTable.name}ObjectsVia${daFk.childColumnName};
+        #end
+      }
+      
+      
+      /**
+       * Adds a new record in the child table ${daFk.childTable.name} linking this to the supplied
+       * to this object. 
+       *
+       * @param ${daFk.childTable.name}Object Object can be an existing database object or not(Will be created)
+       * @return Object the newly created ${daFk.childTable.name} Object
+       * @throw Inform8DbException if there is an error adding the record/s. 
+       */
+      public function add${daFk.childTable.name}ObjectVia${daFk.childColumnName}($${daFk.childTable.name}Object) {        
+        // Dao to create the child record.
+        $ctDao = new ${daFk.childTable.name}Dao();
+        
+        // build a child link object
+        $${daFk.childTable.name}Object->set${daFk.childColumnName}($this->getPk());
+        
+        // create a link to in the join table
+        $${daFk.childTable.name}Object = $ctDao->create($${daFk.childTable.name}Object);
+        
+        return $${daFk.childTable.name}Object;
+      }
+           
+    #end
+  #end
+}
+?>

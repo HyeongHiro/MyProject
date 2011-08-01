@@ -1,0 +1,74 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+*#<?php
+
+/**
+ * Creates a new ${table.name} object and record in the table: ${table.name} 
+ *
+ */
+abstract class ${table.name}CreateTransaction {
+	
+    /** The ${table.name} object to create in the database
+	protected $obj;
+	
+    
+	function __construct() {
+	}
+
+    /**
+     * Creates a new ${table.name} objects
+     * @return ${table.name}CreateTransaction this
+     */
+	protected function create() {
+		$this->obj = new ${table.name}();
+		return $this;
+	}
+	
+    /**
+     * Implment this method if you wish to perform some validation prior to execution.
+     *
+     * Must be called by the client directly. May change in future versions.
+     *
+     * @return true if the validation passes or false if not.
+     */    
+	public function preValidate() {
+		return true;
+	}
+
+    
+	/**
+	 * This method should be implemented by the extending class.
+	 * This is the opportunity to set the values on the new ${table.name} object
+	 * @param $obj ${table.name} The object to update
+	 * @abstract 
+	 */
+	public abstract function updateObj(${table.name} $obj);
+
+
+    /**
+     * Runs the transaction. creates, updates and saves the object.
+     * @return ${table.name} the saved object.
+     */
+	public final function run() {
+		$this->create();
+		$this->updateObj($this->obj);
+		return $this->save();
+	}
+
+    
+    /**
+     * Creates the new record in the database
+     * @return ${table.name} the new object.
+     */
+	protected function save() {
+		$dao = new ${table.name}Dao();
+		return $dao->create($this->obj);
+	}
+
+}
+?>

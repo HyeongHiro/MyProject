@@ -1,0 +1,39 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/**************************************************************
+*****************************************General font styles */
+body {
+	color: #555555;
+	font-size: 12px;
+	font-family: georgia, serif;
+}
+	
+img { 
+    border: none; 
+}
+
+br.clear {
+	clear: both;
+}
+
+br.clear-left {
+	clear: left;
+}
+
+br.clear-right {
+	clear: right;
+}
+	
+a {
+	text-decoration: none;
+	outline: none;
+}	
+	
+a:hover {
+	text-decoration:underline;
+}
+	
+a.link {
+	text-decoration: underline;
+}

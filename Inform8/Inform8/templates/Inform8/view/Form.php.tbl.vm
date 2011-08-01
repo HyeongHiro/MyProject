@@ -1,0 +1,22 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+*#
+<form method="POST" name="frm${table.name}">
+    <input type="hidden" name="id" value="<?php if($obj != NULL) { echo $obj->getPk(); } ?>">
+    <table id="frm${table.name}Table" class="inform8Form">
+#foreach( $col in ${table.columns} )
+        <tr>
+            <td>${col.name}</td>
+            <td><input type="text" name="${col.name}" value="<?php if($obj != NULL) { echo $obj->get${col.name}(); } ?>"></td>
+        </tr>
+#end
+    <tr>
+        <td colspan="2"><input type="submit"></td>
+    </tr>
+    </table>
+</form>

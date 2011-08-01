@@ -1,0 +1,89 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+*#<?php
+
+  #macro(getOtherTable $fk) 
+    #set($jt_cm = ${daFk.childTable.columnModel.copy()})
+    #set($temp = ${jt_cm.remove(${daFk.childColumnName})})
+    #set($oc = ${jt_cm.columns.get(0)})
+    #set($ot = ${jt_cm.columns.get(0).childForeignKey.masterTable})
+  #end 
+
+/**
+ * Utility class to create JSON strings from Objects.
+ *
+ * Generated source code using Inform8.
+ */
+class ${table.name}JsonBuilder { 
+  
+
+  /**
+   * Encodes the supplied object (all the member variables) into a json object.
+   * Uses the php json_encode method.
+   *
+   * @param $obj the object to be encoded
+   * @return String The JSON string representing this object
+   */
+  public function toJson($obj) {
+    // basic fields
+    $objArray = $this->getBaseFieldArray($obj);
+    return json_encode($objArray);  
+  }
+  
+  
+  private function getBaseFieldArray($obj) {
+    $objArray = Array();
+    #foreach( $col in ${table.columns} )
+        $objArray['${col.name}'] = $obj->get${col.name}();
+    #end
+    return $objArray;
+  }
+  
+  /**
+   * Convenience method to ensure all linked objects are also encoded.
+   * Note: Does not include one(this) to many or many to many relationships.
+   * Does include Many(this) to one. 
+   * E.g. Adress(this) -> AddressType, so would encode the AddressType into the Address for quick access 
+   *
+   * @return String The JSON string representing this object and all directly(1-1 cardinality) linked objects
+   */
+  public function toExpandedJson($obj) {
+    // basic fields
+    $objArray = $this->getBaseFieldArray($obj);
+    #foreach( $col in ${table.columns} )
+      #if (${col.childForeignKey})
+        $builder = new ${col.childForeignKey.masterTable.name}JsonBuilder();
+        $objArray['${col.name}Object'] = $builder->toJson($obj->get${col.name}AsObject());
+      #end
+    #end
+    
+    #foreach($daFk in ${table.primaryKey.masterForeignKeys})
+        #if($daFk.childTable.settings.hasLabel('JOIN_TABLE'))
+            #getOtherTable($daFk)
+            $builder = new ${ot.name}JsonBuilder();
+            $theObjs = $obj->get${ot.name}ObjectsVia${daFk.childTable.name}();
+            $theObjsArray = array();
+            foreach($theObjs as $theObj) {
+                $theObjsArray[] = $builder->toJson($theObj);
+            }            
+            $objArray['linked${ot.name}ObjectsVia${daFk.childTable.name}'] = $theObjsArray;
+        #else
+            $builder = new ${daFk.childTable.name}JsonBuilder();
+            $theObjs = $obj->get${daFk.childTable.name}ObjectsVia${daFk.childColumnName}();
+            $theObjsArray = array();
+            foreach($theObjs as $theObj) {
+                $theObjsArray[] = $builder->toJson($theObj);
+            }
+            $objArray['${daFk.childTable.name}ObjectsVia${daFk.childColumnName}'] = $theObjsArray;
+        #end
+    #end
+    return json_encode($objArray);
+  }
+
+}    
+?>

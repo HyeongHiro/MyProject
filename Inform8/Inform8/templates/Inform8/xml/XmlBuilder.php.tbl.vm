@@ -1,0 +1,104 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+*#<?php
+
+  #macro(getOtherTable $fk) 
+    #set($jt_cm = ${daFk.childTable.columnModel.copy()})
+    #set($temp = ${jt_cm.remove(${daFk.childColumnName})})
+    #set($oc = ${jt_cm.columns.get(0)})
+    #set($ot = ${jt_cm.columns.get(0).childForeignKey.masterTable})
+  #end 
+
+/**
+ * Utility class to create XML strings from Objects.
+ *
+ * Generated source code using Inform8.
+ */
+class ${table.name}XMLBuilder { 
+  
+
+  /**
+   * Encodes the supplied object (all the member variables) into a xml object.
+   *
+   * @param $obj the object to be encoded
+   * @return String The XML string representing this object
+   */
+  public function toXml($obj) {
+    $doc = new DomDocument();
+    $root = $doc->createElement('${table.name}');
+    $root = $doc->appendChild($root);
+    $this->addFields($doc, $root, $obj);
+    return $doc->saveXml();
+  }
+  
+  public function addFields($doc, $element, $obj) {
+    #foreach( $col in ${table.columns} )
+        $element->appendChild($doc->createElement('${col.name}', $obj->get${col.name}()));
+    #end
+  }
+  
+  /**
+   * Convenience method to ensure all linked objects are also encoded.
+   * Note: Does not include one(this) to many or many to many relationships.
+   * Does include Many(this) to one. 
+   * E.g. Adress(this) -> AddressType, so would encode the AddressType into the Address for quick access 
+   *
+   * @return String The JSON string representing this object and all directly(1-1 cardinality) linked objects
+   */
+  public function toExpandedXml($obj) {
+    $doc = new DomDocument();
+    $root = $doc->createElement('${table.name}');
+    $root = $doc->appendChild($root);
+    $this->addFields($doc, $root, $obj);
+    
+    
+    $childFks = $doc->createElement('ChildObjects');
+    $root->appendChild($childFks);
+    
+    #foreach( $col in ${table.columns} )
+      #if (${col.childForeignKey})
+        $objectEle = $doc->createElement('${col.name}Object');
+        $childFks->appendChild($objectEle);
+        
+        $builder = new ${col.childForeignKey.masterTable.name}XMLBuilder();
+        $builder->addFields($doc, $objectEle, $obj->get${col.name}AsObject());
+      #end
+    #end
+    
+    #foreach($daFk in ${table.primaryKey.masterForeignKeys})
+        #if($daFk.childTable.settings.hasLabel('JOIN_TABLE'))
+            #getOtherTable($daFk)
+            $builder = new ${ot.name}XMLBuilder();
+            $theObjs = $obj->get${ot.name}ObjectsVia${daFk.childTable.name}();
+            
+            $fkHolder = $doc->createElement('linked${ot.name}ObjectsVia${daFk.childTable.name}');
+            $root->appendChild($fkHolder);
+            foreach($theObjs as $theObj) {
+                $ele = $doc->createElement('${ot.name}');
+                $builder->addFields($doc, $ele, $theObj);
+                $fkHolder->appendChild($ele);
+            }            
+            
+        #else
+            $builder = new ${daFk.childTable.name}XmlBuilder();
+            $theObjs = $obj->get${daFk.childTable.name}ObjectsVia${daFk.childColumnName}();
+
+            $fkHolder = $doc->createElement('${daFk.childTable.name}ObjectsVia${daFk.childColumnName}');
+            $root->appendChild($fkHolder);
+            foreach($theObjs as $theObj) {
+                $ele = $doc->createElement('${daFk.childTable.name}');
+                $builder->addFields($doc, $ele, $theObj);
+                $fkHolder->appendChild($ele);
+            }            
+        #end
+    #end
+    return $doc->saveXml();  
+  }
+
+}    
+?>

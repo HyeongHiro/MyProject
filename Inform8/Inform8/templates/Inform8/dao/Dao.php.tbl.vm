@@ -1,0 +1,526 @@
+#* 
+ * Copyright 2011 - Inform8
+ * http://www.inform8.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License")
+ * http://www.apache.org/licenses/LICENSE-2.0
+*#<?php
+/**
+ * Data Access Object. Provides basic select, update, create operations for the table: ${table.name}
+ * Methods that return data usually return an Object or an Array of Objects of type: ${table.name} 
+ *
+ * Generated source code using Inform8.
+ */
+class ${table.name}Dao extends Inform8Dao{ 
+	
+  private static $FIELD_KEYS = array(
+    #foreach( $col in ${table.columns} ) #if ($velocityCount > 1),#end '${col.name}' #end
+  );
+  
+  /**
+   *
+   *
+   */
+  function __construct() {
+    parent::__construct();
+  }
+  
+  /**
+   * Creates a new record in table: ${table.name}<br>
+   * Only creates a ${table.name} record. No linked/child records are updated.
+   * <br><br>
+   * The passed object will not be updated. A new object will be returned, loaded with the data from the database. 
+   *
+   * @param ${table.name} $obj the object that represents the new ${table.name} record
+   * @return ${table.name} the newly created object. 
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function create($obj) {
+    $query = 'INSERT INTO ${table.name} ( ';
+    #foreach( $col in ${table.columns} )
+      #if(!$col.settings.hasLabel('DB_READ_ONLY'))
+        #if ($velocityCount > 1)
+          if ($query[strlen($query)-1] != ',') {
+            $query .= ", ";
+          }
+        #end
+        $query .= '${col.name}';
+      #end
+    #end
+    $query .= ") VALUES(";
+    #foreach( $col in ${table.columns} )
+      #if(!$col.settings.hasLabel('DB_READ_ONLY'))
+        #if ($velocityCount > 1)
+          if ($query[strlen($query)-1] != ',') {
+            $query .= ",";
+          }
+        #end
+        if ($obj->get${col.name}() != NULL) {
+          #if (${col.type.name} == 'boolean' || ${col.type.name} == 'tinyint' || ${col.type.name} == 'int' || ${col.type.name} == 'smallint' || ${col.type.name} == 'mediumint') 
+            if ($obj->get${col.name}() != '') {
+              $query .= $this->mysqli->real_escape_string($obj->get${col.name}());
+            }else {
+              $query .= "NULL";
+            }	
+          #else
+            $query .= "\"" . $this->mysqli->real_escape_string($obj->get${col.name}()) . "\"";
+          #end
+        }else {
+          $query .= "NULL";
+        }
+      #end
+    #end
+    $query .= ")";
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.create.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Create query for ${table.name} ' . $query);
+        }
+    #end
+    
+    $result = $this->mysqli->query($query);
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.create.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Create query result ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    $this->checkResult($result);
+		
+    $id = $this->mysqli->insert_id;
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.create.logquery.id", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true"  && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Create query new id ' . $id);
+        }
+    #end    
+    if(!$id) {
+        throw Inform8DbException::sqlError($this->mysqli->errno, $this->mysqli->error);
+    }
+
+    $newObj = $this->get($id);
+		
+    #if($config.allProperties.getProperty("jack.history.on", "false") == "true")
+      #if(${table.name} != 'JackHistory')
+        $this->_saveHistory($newObj);
+      #end
+    #end
+		
+    return $newObj;
+  }
+
+
+  /**
+   * Updates an existing record in table: ${table.name}<br>
+   * Only updates the ${table.name} record. No child/linked records are updated.<br><br>
+   *
+   * The $obj Object will not be updated a new Object will be returned.
+   *
+   * @param ${table.name} $obj the object to save that represents an existing ${table.name} record
+   * @return ${table.name} the reloaded object of type ${table.name} from the database after the save operation
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function save($obj) {
+    $query = "";
+    #foreach( $col in ${table.columns} )
+      #if(!$col.settings.hasLabel('DB_READ_ONLY'))
+        #if ($velocityCount > 1)
+          if (strlen($query) > 0 && $query[strlen($query)-1] != ',') {
+            $query .= ",";
+          }
+        #end
+        if(is_null($obj->get${col.name}())) {
+          $query .= "${col.name} = NULL";
+        }else {
+          #if (${col.type.name} == 'boolean' || ${col.type.name} == 'tinyint' || ${col.type.name} == 'int' || ${col.type.name} == 'smallint' || ${col.type.name} == 'mediumint') 
+            if ($obj->get${col.name}() != '') {
+              $query .= "${col.name} = " . $this->mysqli->real_escape_string($obj->get${col.name}());
+            }else {
+              $query .= "${col.name} = NULL";
+            }
+          #else 
+            $query .= "${col.name} = \"" . $this->mysqli->real_escape_string($obj->get${col.name}()) . "\"";
+          #end
+        }
+      #end
+    #end
+    $query = 'UPDATE ${table.name} SET ' . $query;
+    $query .= ' WHERE $table.primaryKey.name = ' . $obj->get${table.primaryKey.name}();
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.save.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Save query for ${table.name} ' . $query);
+        }
+    #end
+    
+    $result = $this->mysqli->query($query);
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.save.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Save query result ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    
+    $this->checkResult($result);
+    $toReturn = $this->get($obj->get${table.primaryKey.name}());
+		
+    #if($config.allProperties.getProperty("jack.history.on", "false") == "true")
+      #if(${table.name} != 'JackHistory')
+        $this->_saveHistory($toReturn);
+      #end
+    #end		
+
+    return $toReturn;
+  }
+  
+  
+  /**
+   *
+   * Deletes a record with the specified id.
+   * <br>
+   * If an object of type ${table.name} is passed then the value of the primary key is used as the id to delete.
+   *
+   * @param int/${table.name} $id the id of the record (or the object of type ${table.name}) to delete 
+   * @return int the number of rows affected by the delete operation.
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function delete($id) {
+    if (is_object($id)) {
+      $id = $id->getPk();
+    }
+    $query = 'DELETE FROM ${table.name} WHERE $table.primaryKey.name = ' . $id;
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.delete.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Delete query for ${table.name} ' . $query);
+        }
+    #end
+    
+    $result = $this->mysqli->query($query);  
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.delete.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Delete query result ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    $this->checkResult($result);
+    return $this->mysqli->affected_rows;
+  }
+
+
+  /**
+   *
+   * Reloads the object from the database
+   * <br>
+   * @param ${table.name} $object the object to reload 
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function reload($object) {
+    $this->get($object->getPk(), $object);
+  }
+
+
+  /**
+   * Gets a ${table.name} record with the supplied id. 
+   *
+   * @param mixed $id the primary key of the record in table: ${table.name} 
+   * @param ${table.name} $object the object to load the values into, or NULL to create a new object
+   * @return 
+   *         NULL if no database record is found.
+   *         Object of type ${table.name} if the record is found
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function get($id, $object = NULL) {
+    $query = 'SELECT * FROM ${table.name} WHERE $table.primaryKey.name = ' . $id;
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.get.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Get query for ${table.name} ' . $query);
+        }
+    #end
+    $result = $this->mysqli->query($query);
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.get.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Get query result ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    $this->checkResult($result);
+    if ($result->num_rows == 0) {
+        return NULL;
+    } else {
+        $record = $result->fetch_assoc();
+        $object = $this->loadObject($record, NULL, $object);
+        $result->close();
+        return $object;
+    }
+  }
+  
+  /**
+   * Gets an array of ${table.name} records with the supplied ids. 
+   * Will return those records that are present.
+   *
+   * @param Array $ids the primary keys of the record in table: ${table.name} 
+   * @return 
+   *         NULL if no database records are found.
+   *         Array with ${table.name} objects if records are found
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */  
+  public function getWithIds($ids) {
+    $query = 'SELECT * FROM ${table.name} WHERE ${table.primaryKey.name} = ' . $ids[0];
+    for($i = 1; $i < count($ids); $i++) {
+        $query .= ' OR ' . ' ${table.primaryKey.name} = ' . $ids[$i];
+    }
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.getWithIds.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Get with Ids query for ${table.name} ' . $query);
+        }
+    #end
+    return $this->getWithSql($query, false);
+  }
+	
+  
+  /**
+   *
+   * Returns all (unless limited)-  records from table ${table.name} as objects of type ${table.name}
+   *
+   * @param $limit int the record limit count (0 for all)
+   * @param $limitStart int the starting record (0 for all)
+   * @param $orderBy String the field to order by
+   * @param $orderDir String The order direction.
+   * @param $fields String the fields to select in correct mysql select format
+   * @return 
+   *         Array An array of objects of type ${table.name} if records are found
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function getAll($limit=0, $limitStart=0, $orderBy='', $orderDir='ASC', $fields='*') {
+    $query = 'SELECT ' . $fields . ' FROM ${table.name}';
+
+    if ($orderBy != NULL && $orderBy != '') {
+        $query = $query . ' ORDER BY ' . $orderBy . ' ' . $orderDir;
+    }
+
+    #if (${table.isOrdered()} || $table.getParentChildMember())
+      if ($orderBy == NULL ||  $orderBy == '') {
+        $query = $query . ' ORDER BY ${table.getOrder()}';
+      }
+    #end
+    if ($limit > 0) {
+      $query = $query . ' LIMIT ' . $limitStart . ', '.  $limit;
+    }
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.getAll.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Get all query for ${table.name} ' . $query);
+        }
+    #end
+    return $this->getWithSql($query, false);
+  }
+  
+
+  /**
+   * Gets objects from the table: ${table.name} using  the supplied SQL query or query portion
+   *
+   * Full query example: getWithSql('SELECT * FROM ${table.name} WHERE X=Y', false)
+   * Partial query example: getWithSql('X=Y', true)
+   *
+   * @param String $sql the entire or portion of a select query.
+   * @param boolean $append false if $sql is the full query and true if its to be appended to the end of a select query.   
+   * @return
+   *         NULL if no database records are found.
+   *         Array of Objects of type ${table.name} if records are found 
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function getWithSql($sql, $append = true) {
+		
+    if ($append) {
+      $query = 'SELECT * FROM ${table.name} WHERE ' . $sql;
+    }else {
+      $query = $sql;
+    }
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.getWithSql.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Get with SQL query for ${table.name} ' . $query);
+        }
+    #end
+    
+    $result = $this->mysqli->query($query);
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.getWithSql.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Get With SQL query result: ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    
+    $this->checkResult($result);
+      if ($result->num_rows == 0) {
+        return NULL;
+      } else {
+        $objects = Array();
+        while ($record = $result->fetch_assoc()) {
+          $objects[] = $this->loadObject($record);
+        }
+        /* Free resultset */
+        $result->close();
+        return $objects;
+      }
+  }
+  
+  
+ /**
+   * Counts records from the table: ${table.name} using  the supplied SQL query or query portion
+   *
+   * Full query example: getWithSql('SELECT count(*) AS count FROM ${table.name} WHERE X=Y', false)
+   * Partial query example: getWithSql('X=Y', true)
+   *
+   * @param String $sql the entire or portion of a select query.
+   * @param boolean $append false if $sql is the full query (you must call the return column 'count') and true if its to be appended to the end of a select query.   
+   * @return int the number of records
+   */
+  public function countWithSql($sql, $append = true) {
+        
+    if ($append) {
+      $query = 'SELECT count(*) AS count FROM ${table.name} WHERE ' . $sql;
+    }else {
+      $query = $sql;
+    }
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.countWithSql.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Count with SQL query for ${table.name} ' . $query);
+        }
+    #end
+    
+    $result = $this->mysqli->query($query);
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.countWithSql.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Count With SQL query result: ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    
+    $this->checkResult($result);
+      if ($result->num_rows == 0) {
+        throw Inform8DbException::noRecords();
+      } else {
+        $record = $result->fetch_assoc();
+        $thecount = $record['count'];
+        $result->close();
+        return $thecount;
+      }
+  }
+	
+  
+  /**
+   * Returns the total number of records in the table ${table.name}
+   * 
+   * @return int The record count for ${table.name}
+   * @throw Inform8DbException if there is an error executing the SQL.
+   */
+  public function countAll() {
+    $query = 'SELECT count(*) AS count FROM ${table.name}';
+
+    #set($level = $config.allProperties.getProperty("logging.dao.countAll.logquery", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true"  && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Count ALL query for ${table.name} ' . $query);
+        }
+    #end
+
+    $result = $this->mysqli->query($query);	
+    
+    #set($level = $config.allProperties.getProperty("logging.dao.countAll.logquery.result", "BaseLogger::$DEBUG"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $this->logger->log($level, 'Count ALL query result: ' . $this->getResultAsString($result) . ', Query: ' . $query);
+        }
+    #end
+    $this->checkResult($result);
+      if ($result->num_rows == 0) {
+        throw Inform8DbException::noRecords();
+      } else {
+        $record = $result->fetch_assoc();
+        $thecount= $record["count"];
+        $result->close();
+        return $thecount;
+      }
+  }
+	
+	
+  /**
+   * Converts a mysql ${table.name} record to an Object of type ${table.name}
+   *
+   * @param array $record The database record
+   * @param array $fields an array specifying the fields to load (Optional), if NULL attempts to load all fields.
+   * @param ${table.name}/NULL $object the existing object to load the data into or NULL to create a new object of type ${table.name}
+   */
+  protected function loadObject($record, $fields = NULL, $object = NULL) {
+    if ($object == NULL) {  
+        $object = new ${table.name}();
+    }
+    
+    if (!isset($fields) || count($fields) <=0 || (count($fields) == 1 && $fields[0] == '*')) {
+      $fields = self::$FIELD_KEYS; 
+    }
+
+    $toSet = array_intersect($fields, self::$FIELD_KEYS);
+    
+    //set members
+    foreach($toSet as $field) {
+      $setCall = 'set' . $field;
+      if (isset($record[$field])) {
+        $object->$setCall($record[$field]);
+      }
+    }
+    
+    //set Primary Key if in record set 
+    if (isset($record["${table.primaryKey.name}"])) {
+      $object->set${table.primaryKey.name}($record["${table.primaryKey.name}"]);
+    }
+    
+
+    #set($level = $config.allProperties.getProperty("logging.dao.loadObject.result", "BaseLogger::$ALL"))
+    #if($config.allProperties.getProperty("logger.on", "false") == "true" && $level != 'OFF')
+        if ($this->logger && $this->logger->isLevel($level)) {
+            $builder = new ${table.name}JsonBuilder();
+            $this->logger->log($level, 'Load object result: ' . $builder->toJson($object) . ', Record: ' . json_encode($record) . ', Fields: ' . json_encode($fields));
+        }
+    #end
+    return $object;
+  }
+  
+  #set($historyTable = ${config.allProperties.getProperty("history.table.name", "Inform8History")})
+  #set($historyEnabled = ${config.allProperties.getProperty("history.enabled", "false")} == "true")
+  #if ($historyEnabled)
+      #if(${table.name} != $historyTable )
+        protected function _saveHistory($obj) {
+          $historyDao = new ${historyTable}Dao();
+          $jsonBuilder = new ${table.name}JsonBuilder();
+          
+          $historyBo = new ${historyTable}();
+          $historyBo->TableName = '${table.name}';
+          $historyBo->RecordId = $obj->getPk();
+          $historyBo->Json = $jsonBuilder->toJson($obj);
+          $historyDao->create($historyBo);
+        }
+      #end
+  #end
+}
+?>
