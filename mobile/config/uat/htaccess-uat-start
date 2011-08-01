@@ -1,5 +1,0 @@
-AuthUserFile /var/www/.htpasswd_test
-AuthName "GB Test Env"
-AuthType Basic
-Require valid-user
-
