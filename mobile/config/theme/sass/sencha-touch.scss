@@ -1,0 +1,376 @@
+@import 'sencha-touch/default/all';
+
+@include sencha-panel;
+@include sencha-buttons;
+@include sencha-sheet;
+@include sencha-picker;
+@include sencha-tabs;
+@include sencha-toolbar;
+@include sencha-toolbar-forms;
+@include sencha-carousel;
+@include sencha-indexbar;
+@include sencha-list;
+@include sencha-list-paging;
+@include sencha-list-pullrefresh;
+@include sencha-layout;
+@include sencha-form;
+@include sencha-msgbox;
+@include sencha-loading-spinner;
+
+
+
+.gbHeading {
+	color: $green-color;
+	font-size: 140%; 
+}
+
+.gbSubHeading {
+	color: $green-color;
+	font-size: 120%; 
+}
+
+.gbSubHeading.bold {
+	font-weight: bolder; 
+}
+
+.gbBlackHeading {
+	color: #000;
+	font-size: 140%; 
+	font-weight: bolder;
+}
+
+.greenText {
+	color: $green-color;
+}
+
+.greenText.bold {
+	font-weight: bolder;
+}
+
+.cafelist_cafename {
+	font-weight: bold;
+}
+
+.cafelist_cafeaddress {
+	padding-bottom: 0.2em;
+}
+
+.x-list.cafelist {
+	background-color: #fff;
+}
+
+.x-list.cafelist .x-list-item:first-child {
+	border-top: 1px solid darken($list-bg-color, 15%);
+}
+
+
+.x-field.cafe_search_field .x-input-text{
+	border: 1px solid #ccc;
+	border-radius: 15px;
+}
+
+
+.x-field.cafe_search_field {
+	border: none;
+}
+
+.x-button.x-button-green {
+	color: #fff;
+	text-shadow: #006137 0 0.08em 0;
+	background-image: -webkit-gradient(
+	    linear,
+	    left top,
+	    left bottom,
+	    color-stop(0.5, rgb(40,149,81)),
+	    color-stop(0.5, rgb(0,138,76))
+	);
+	background-image: -moz-linear-gradient(
+	    center top,
+	    rgb(40,149,81) 50%,
+	    rgb(0,138,76) 50%
+	);	
+	border: none;
+	-moz-box-shadow: 0 1px 3px #999;
+	-webkit-box-shadow: 0 1px 3px #999;
+	
+}
+
+.x-button.x-button-green.x-button-pressed {
+	color: #fff;
+	text-shadow: #006137 0 0.08em 0;
+	background-image: -webkit-gradient(
+	    linear,
+	    left top,
+	    left bottom,
+	    color-stop(0.5, rgb(30,139,71)),
+	    color-stop(0.5, rgb(0,128,66))
+	);
+	background-image: -moz-linear-gradient(
+	    center top,
+	    rgb(30,139,71) 50%,
+	    rgb(0,128,66) 50%
+	);	
+	border: none;
+	-moz-box-shadow: 0 1px 3px #999;
+	-webkit-box-shadow: 0 1px 3px #999;
+	
+}
+
+
+.coffee_size_component .image, .coffee_milk_component .image, .coffee_strength_component .image,
+  .coffee_sugar_component .image
+ {
+	background-image: url(/images/sprites.png);
+	background-repeat: no-repeat;
+	width: 70px;
+	height: 70px;
+}
+
+.coffee_size_small .image {
+	background-position: 0 -5px; 
+}
+
+.coffee_size_regular .image {
+	background-position: -75px -5px;
+}
+
+.coffee_size_large .image {
+	background-position: -150px -5px;
+}
+
+.coffee_size_small .image.selected{
+	background-position: 0 -80px; 
+}
+
+.coffee_size_regular .image.selected{
+	background-position: -75px -80px; 
+}
+
+.coffee_size_large .image.selected{
+	background-position: -150px -80px;
+}
+
+
+.coffee_milk_skim .image {
+	background-position: 0 -155px; 
+}
+
+.coffee_milk_fullcream .image {
+	background-position: -75px -155px; 
+}
+
+.coffee_milk_soy .image {
+	background-position: -150px -155px;
+}
+
+.coffee_milk_none .image {
+	background-position: -225px -155px;
+}
+
+.coffee_milk_skim .image.selected {
+	background-position: 0 -230px; 
+}
+
+.coffee_milk_fullcream .image.selected {
+	background-position: -75px -230px; 
+}
+
+.coffee_milk_soy .image.selected {
+	background-position: -150px -230px;
+}
+
+.coffee_milk_none .image.selected {
+	background-position: -225px -230px;
+}
+
+
+.coffee_strength_weak .image {
+	background-position: 0 -305px; 
+}
+
+.coffee_strength_regular .image {
+	background-position: -75px -305px;
+}
+
+.coffee_strength_strong .image {
+	background-position: -150px -305px;
+}
+
+.coffee_strength_weak .image.selected {
+	background-position: 0 -380px; 
+}
+
+.coffee_strength_regular .image.selected {
+	background-position: -75px -380px;
+}
+
+.coffee_strength_strong .image.selected {
+	background-position: -150px -380px;
+}
+
+
+.coffee_sugar_none .image {
+	background-position: 0 -455px; 
+}
+
+.coffee_sugar_half .image {
+	background-position: -75px -455px;
+}
+
+.coffee_sugar_one .image {
+	background-position: -150px -455px;
+}
+
+.coffee_sugar_two .image {
+	background-position: -225px -455px; 
+}
+
+.coffee_sugar_none .image.selected {
+	background-position: 0 -530px; 
+}
+
+.coffee_sugar_half .image.selected {
+	background-position: -75px -530px;
+}
+
+.coffee_sugar_one .image.selected {
+	background-position: -150px -530px;
+}
+
+.coffee_sugar_two .image.selected {
+	background-position: -225px -530px; 
+}
+
+.signUp-header-text-color{
+	color:green;
+}.signUp-header{
+	padding-left:16px;
+	padding-bottom:10px;
+	font-size:28px;
+	font-weight:bold;
+}
+.sub-header{
+	padding-left:16px;
+	padding-bottom:20px;
+	font-size:20px;
+	font-weight:bold;
+}
+.footer-text{
+	font-size:20px;
+	font-weight:bold;
+}
+
+.topup_component .image{background-image:url(/images/payment.png);background-repeat:no-repeat;width:70px;height:70px}
+.topup_paypal .image{background-position:0 -5px}.topup_credit .image{background-position:-170px -5px}
+.topup_paypal .image.selected{background-position:0 -150px}
+.topup_credit .image.selected{background-position:-170px -150px}
+
+
+.x-list .x-list-disclosure {
+    -webkit-mask: none;
+    background-image: url('/images/smlArrow.png') !important;
+    background-repeat: no-repeat;
+	background-color:transparent;
+    width: 36px;
+    height: 36px;
+}
+.x-list .x-item-selected .x-list-disclosure {
+	background-color: transparent;
+	    background-repeat: no-repeat;
+	background-color:transparent;
+}
+
+.x-list{background-color:white;position:relative}
+
+.x-mask .x-mask-loading{
+	color:black;
+	text-align:center;
+	padding:.4em;
+	display:block;
+	width:13.5em;
+	height:10.5em;
+	background:white;
+	font-weight: normal;
+	border: 2px solid #55b84c;
+}
+
+.x-form-label {background-color:white;}
+
+.loadingMsg {
+	font-size: 130%;
+	color: #000;
+	font-weight: regular;
+}
+
+.gbHeading.maskHeading {
+	padding-bottom: 6px;
+}
+
+.x-toolbar-green {
+background-image: -webkit-gradient(
+    linear,
+    left bottom,
+    left top,
+    color-stop(0.32, rgb(39,163,89)),
+    color-stop(0.75, rgb(121,209,121))
+);
+}
+
+.food_small_display {
+	border-bottom: 1px solid #ccc;
+}
+
+.x-field.x-field-text, .x-field.x-field-select {
+	border: 1px solid #ccc;
+}
+
+.x-field.cafe_search_field.x-field-text {
+	border: none;
+}
+
+.x-field.special_request {
+	border: 1px solid #ccc;
+}
+
+.quantity_box {
+	border: 1px solid #ccc;
+	padding: 4px;
+}
+
+.base_select_panel {
+	border-bottom: 1px solid #ccc;
+}
+
+.x-floating.x-panel.order_popup {
+	background-color: #fff;
+	border: 2px solid #55b84c;
+}
+
+.smallText {
+	font-size: 80%
+}
+
+.loyaltyCard .img{ margin-bottom:10px;}
+
+.loyaltyCard {
+ width: 201px; padding: 10px; margin-left:16px; margin-top:12px; -moz-box-shadow: 5px 5px 5px rgb(200,200,200);-webkit-box-shadow: 5px 5px 5px rgb(200,200,200); box-shadow: 5px 5px 5px rgb(200,200,200); border:#5ABF60 solid 2px;
+}
+
+div.loyaltyCard div {
+background-color: #FFFFFF;
+}
+
+div.loyaltyCard .stamp {
+float:left; width:45px; height:45px;
+margin-right:6px; margin-left:6px;
+
+}
+.orderSumamryTable td {
+padding: 4px;
+}
+
+.orderSumamryTable {
+	
+	border: 1px solid #ccc;	
+	border-radius:5px;
+}
